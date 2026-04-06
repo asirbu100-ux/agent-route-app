@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DAY_NAMES } from '@/lib/types/database'
+import { getTodayDate, getTodayDayOfWeek } from '@/lib/utils/date'
 import StartDayButton from './StartDayButton'
 import FinishDayButton from './FinishDayButton'
 import Link from 'next/link'
@@ -15,9 +16,8 @@ export default async function TasksPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const today = new Date().toISOString().split('T')[0]
-  const jsDay = new Date().getDay()
-  const todayDay = jsDay === 0 ? 1 : jsDay === 6 ? 5 : jsDay
+  const today = getTodayDate()
+  const todayDay = getTodayDayOfWeek()
   const visitDay = dayParam ? Math.max(1, Math.min(5, parseInt(dayParam))) : todayDay
   const isToday = visitDay === todayDay
 
@@ -104,7 +104,7 @@ export default async function TasksPage({
         {statsBar}
         <div className="flex flex-col items-center justify-center min-h-[40vh]">
           <p className="text-lg text-gray-500 mb-2">
-            {DAY_NAMES[visitDay]}, {new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
+            {DAY_NAMES[visitDay]}, {new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: 'Europe/Chisinau' })}
           </p>
           <h1 className="text-2xl font-black text-gray-900 mb-8">Доброе утро!</h1>
           <StartDayButton />

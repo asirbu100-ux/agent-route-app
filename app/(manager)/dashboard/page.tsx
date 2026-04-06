@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES } from '@/lib/types/database'
+import { getTodayDate, getTodayDayOfWeek } from '@/lib/utils/date'
 import Link from 'next/link'
 
 export default async function DashboardPage({
@@ -9,9 +10,8 @@ export default async function DashboardPage({
 }) {
   const { agent: selectedAgentId } = await searchParams
   const supabase = await createClient()
-  const today = new Date().toISOString().split('T')[0]
-  const jsDay = new Date().getDay()
-  const visitDay = jsDay === 0 ? 1 : jsDay === 6 ? 5 : jsDay
+  const today = getTodayDate()
+  const visitDay = getTodayDayOfWeek()
 
   // Get all agents
   const { data: agents } = await supabase

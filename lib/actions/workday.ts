@@ -12,7 +12,8 @@ async function requireAgent() {
 
 export async function startDay() {
   const { supabase, user } = await requireAgent()
-  const today = new Date().toISOString().split('T')[0]
+  const { getTodayDate } = await import('@/lib/utils/date')
+  const today = getTodayDate()
 
   const { data: existing } = await supabase
     .from('work_days').select('id').eq('agent_id', user.id).eq('work_date', today).single()
@@ -31,7 +32,8 @@ export async function startDay() {
 
 export async function finishDay() {
   const { supabase, user } = await requireAgent()
-  const today = new Date().toISOString().split('T')[0]
+  const { getTodayDate } = await import('@/lib/utils/date')
+  const today = getTodayDate()
 
   const { error } = await supabase
     .from('work_days')

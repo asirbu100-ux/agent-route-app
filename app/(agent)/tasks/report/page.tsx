@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DAY_NAMES } from '@/lib/types/database'
+import { getTodayDate, getTodayDayOfWeek } from '@/lib/utils/date'
 import Link from 'next/link'
 
 export default async function ReportPage() {
@@ -8,9 +9,8 @@ export default async function ReportPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const today = new Date().toISOString().split('T')[0]
-  const jsDay = new Date().getDay()
-  const visitDay = jsDay === 0 ? 1 : jsDay === 6 ? 5 : jsDay
+  const today = getTodayDate()
+  const visitDay = getTodayDayOfWeek()
 
   // Get work day
   const { data: workDay } = await supabase
