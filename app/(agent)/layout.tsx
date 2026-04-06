@@ -17,39 +17,46 @@ export default async function AgentLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-        <span className="font-semibold text-gray-900 text-sm">{profile?.full_name}</span>
-        <form action="/auth/signout" method="post">
-          <SignOutButton />
-        </form>
+      {/* Fixed header */}
+      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50 safe-top">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+            <span className="text-white text-xs font-black">
+              {profile?.full_name?.charAt(0) ?? 'A'}
+            </span>
+          </div>
+          <span className="font-bold text-gray-900 text-sm">{profile?.full_name}</span>
+        </div>
+        <SignOutForm />
       </header>
 
-      {/* Content */}
+      {/* Scrollable content */}
       <main className="flex-1 overflow-auto pb-20">
         {children}
       </main>
 
-      {/* Bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex">
-        <Link
-          href="/route"
-          className="flex-1 flex flex-col items-center py-3 text-xs text-gray-600 hover:text-blue-600"
-        >
-          <svg className="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+      {/* Fixed bottom nav */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex pb-safe z-50">
+        <Link href="/tasks" className="flex-1 flex flex-col items-center py-3 text-xs font-bold text-blue-600">
+          <svg className="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
           </svg>
-          Маршрут
+          Задачи
+        </Link>
+        <Link href="/tasks/leaderboard" className="flex-1 flex flex-col items-center py-3 text-xs font-bold text-gray-400">
+          <svg className="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+          Рейтинг
+        </Link>
+        <Link href="/tasks/report" className="flex-1 flex flex-col items-center py-3 text-xs font-bold text-gray-400">
+          <svg className="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Отчёт
         </Link>
       </nav>
     </div>
-  )
-}
-
-function SignOutButton() {
-  return (
-    <SignOutForm />
   )
 }
 
@@ -65,7 +72,7 @@ function SignOutForm() {
 
   return (
     <form action={signOut}>
-      <button type="submit" className="text-xs text-gray-500 hover:text-gray-700">
+      <button type="submit" className="text-xs font-bold text-gray-400 px-3 py-1 rounded-lg active:bg-gray-100">
         Выйти
       </button>
     </form>

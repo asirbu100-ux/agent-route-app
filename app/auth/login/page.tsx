@@ -25,55 +25,61 @@ export default function LoginPage() {
       return
     }
 
-    // Get role from profile
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', data.user.id)
       .single()
 
-    router.push(profile?.role === 'manager' ? '/dashboard' : '/route')
+    router.push(profile?.role === 'manager' ? '/dashboard' : '/tasks')
     router.refresh()
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">Вход</h1>
+      <div className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <span className="text-white text-2xl font-black">SF</span>
+          </div>
+          <h1 className="text-2xl font-black text-gray-900">Sales Force</h1>
+          <p className="text-sm text-gray-400 mt-1">Вход в систему</p>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="agent@example.com"
+              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 text-base font-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              placeholder="Email"
+              autoComplete="email"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
             <input
               type="password"
               required
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="••••••••"
+              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 text-base font-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              placeholder="Пароль"
+              autoComplete="current-password"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+            <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 font-medium text-center">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2 rounded-lg transition-colors"
+            className="w-full bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white font-bold py-4 rounded-xl text-base transition-all active:scale-[0.98] shadow-lg"
           >
             {loading ? 'Вход...' : 'Войти'}
           </button>

@@ -15,5 +15,5 @@ export default async function RootPage() {
     .eq('id', user.id)
     .single()
 
-  redirect(profile?.role === 'manager' ? '/dashboard' : '/route')
+  redirect(profile?.role === 'manager' ? '/dashboard' : '/tasks')
 }

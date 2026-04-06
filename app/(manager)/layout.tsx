@@ -13,7 +13,7 @@ export default async function ManagerLayout({ children }: { children: React.Reac
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'manager') redirect('/route')
+  if (profile?.role !== 'manager') redirect('/tasks')
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -30,7 +30,7 @@ export default async function ManagerLayout({ children }: { children: React.Reac
         {/* Sidebar */}
         <nav className="w-52 bg-white border-r border-gray-200 py-4 px-3 shrink-0">
           <NavLink href="/dashboard">Обзор</NavLink>
-          <NavLink href="/routes">Маршруты</NavLink>
+          <NavLink href="/clients">Клиенты</NavLink>
           <NavLink href="/products">Товары</NavLink>
         </nav>
 

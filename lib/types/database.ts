@@ -1,14 +1,31 @@
 export type Role = 'agent' | 'manager'
-export type RouteStatus = 'draft' | 'active' | 'completed'
-export type VisitResult = 'sold' | 'not_sold'
-export type RefusalReason =
-  | 'expensive'
-  | 'not_needed'
-  | 'no_space'
-  | 'competitor'
-  | 'no_decision_maker'
-  | 'no_stock'
-  | 'other'
+
+export const DAY_NAMES: Record<number, string> = {
+  1: 'Понедельник',
+  2: 'Вторник',
+  3: 'Среда',
+  4: 'Четверг',
+  5: 'Пятница',
+}
+
+export const REFUSAL_REASONS = [
+  'Нет на складе',
+  'Дорого',
+  'Не нужен',
+  'Конкурент',
+  'Нет места',
+  'Другое',
+] as const
+
+// Coaching tips — auto-responses for each refusal
+export const OBJECTION_TIPS: Record<string, string> = {
+  'Нет на складе': 'Предложите оформить предзаказ. Спросите когда ожидается поставка.',
+  'Дорого': 'Покажите маржу: "На этом товаре вы зарабатываете X% — это выше среднего".',
+  'Не нужен': 'Спросите: "А ваши покупатели его спрашивают?" Покажите данные по соседним точкам.',
+  'Конкурент': 'Предложите поставить рядом. "Покупатель сравнит и выберет — вы заработаете на обоих".',
+  'Нет места': 'Предложите убрать самый неходовой товар. "Этот продаётся в 3 раза быстрее".',
+  'Другое': 'Уточните причину и запишите в комментарий для менеджера.',
+}
 
 export interface Profile {
   id: string
@@ -29,99 +46,47 @@ export interface Product {
   created_at: string
 }
 
-export interface Route {
+export interface Client {
   id: string
-  agent_id: string
-  manager_id: string
-  route_date: string
-  title: string | null
-  status: RouteStatus
-  created_at: string
-  updated_at: string
-}
-
-export interface RoutePoint {
-  id: string
-  route_id: string
   name: string
-  address: string
-  contact_name: string | null
-  contact_phone: string | null
-  sort_order: number
-  created_at: string
-}
-
-export interface PointProduct {
-  id: string
-  route_point_id: string
-  product_id: string
-  target_qty: number | null
-  product?: Product
-}
-
-export interface Task {
-  id: string
-  route_point_id: string
-  description: string
-  requires_photo: boolean
-  created_at: string
-}
-
-export interface Visit {
-  id: string
-  route_point_id: string
   agent_id: string
-  result: VisitResult | null
-  refusal_reason: RefusalReason | null
-  refusal_comment: string | null
-  agent_comment: string | null
-  arrived_at: string | null
-  submitted_at: string | null
+  visit_day: number
+  address: string | null
+  phone: string | null
+  is_active: boolean
   created_at: string
-  updated_at: string
 }
 
-export interface VisitProduct {
+export interface ClientProduct {
   id: string
-  visit_id: string
+  client_id: string
   product_id: string
-  quantity: number
+  created_at: string
   product?: Product
 }
 
-export interface VisitPhoto {
+export interface WorkDay {
   id: string
-  visit_id: string
-  task_id: string | null
-  storage_path: string
-  uploaded_at: string
+  agent_id: string
+  work_date: string
+  started_at: string
+  finished_at: string | null
 }
 
-// ── Composite types for page queries ──────────────────────────
-
-export interface RoutePointWithDetails extends RoutePoint {
-  tasks: Task[]
-  point_products: PointProduct[]
-  visit: Visit | null
+export interface ClientVisit {
+  id: string
+  work_day_id: string
+  client_id: string
+  photo_path: string | null
+  completed_at: string | null
+  created_at: string
 }
 
-export interface RouteWithPoints extends Route {
-  route_points: RoutePointWithDetails[]
-  agent?: Profile
-}
-
-export interface VisitWithDetails extends Visit {
-  visit_products: VisitProduct[]
-  visit_photos: VisitPhoto[]
-  route_point: RoutePoint
-}
-
-export const REFUSAL_REASON_LABELS: Record<RefusalReason, string> = {
-  expensive: 'Дорого',
-  not_needed: 'Не нужно',
-  no_space: 'Нет места',
-  competitor: 'Есть конкурент',
-  no_decision_maker: 'Нет ЛПР',
-  no_stock: 'Нет товара',
-  other: 'Другое',
+export interface VisitItem {
+  id: string
+  client_visit_id: string
+  client_product_id: string
+  is_sold: boolean
+  refusal_reason: string | null
+  created_at: string
 }

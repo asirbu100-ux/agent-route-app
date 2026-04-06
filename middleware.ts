@@ -25,12 +25,9 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session — MUST be done before any redirect checks
   const { data: { user } } = await supabase.auth.getUser()
-
   const { pathname } = request.nextUrl
 
-  // Public paths that don't require auth
   const isPublicPath =
     pathname.startsWith('/auth') ||
     pathname === '/favicon.ico' ||
@@ -44,7 +41,6 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user) {
-    // Read role from JWT custom claim
     const jwt = await supabase.auth.getSession()
     const role = (jwt.data.session?.user?.user_metadata?.user_role as string) ??
       (await supabase
@@ -54,32 +50,30 @@ export async function middleware(request: NextRequest) {
         .single()
         .then(({ data }) => data?.role ?? 'agent'))
 
-    // Redirect to correct area if on wrong path
     if (pathname === '/') {
       const url = request.nextUrl.clone()
-      url.pathname = role === 'manager' ? '/dashboard' : '/route'
+      url.pathname = role === 'manager' ? '/dashboard' : '/tasks'
       return NextResponse.redirect(url)
     }
 
     // Prevent agents from accessing manager routes
-    const managerPaths = ['/dashboard', '/agents', '/routes', '/products']
+    const managerPaths = ['/dashboard', '/clients', '/products']
     if (role === 'agent' && managerPaths.some(p => pathname.startsWith(p))) {
       const url = request.nextUrl.clone()
-      url.pathname = '/route'
+      url.pathname = '/tasks'
       return NextResponse.redirect(url)
     }
 
     // Prevent managers from accessing agent routes
-    if (role === 'manager' && pathname.startsWith('/route')) {
+    if (role === 'manager' && pathname.startsWith('/tasks')) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }
 
-    // Redirect away from login if already logged in
     if (pathname.startsWith('/auth/login')) {
       const url = request.nextUrl.clone()
-      url.pathname = role === 'manager' ? '/dashboard' : '/route'
+      url.pathname = role === 'manager' ? '/dashboard' : '/tasks'
       return NextResponse.redirect(url)
     }
   }
