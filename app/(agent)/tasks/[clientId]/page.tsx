@@ -78,33 +78,61 @@ export default async function ClientDetailPage({
     // Sort: unsold first
     products.sort((a, b) => (a.wasUnsold === b.wasUnsold ? 0 : a.wasUnsold ? -1 : 1))
 
+    const unsoldCount = products.filter(p => p.wasUnsold).length
+
     return (
       <div className="p-4">
         <div className="mb-4">
           <Link href={backUrl} className="text-sm font-bold text-blue-600 mb-2 inline-block">&larr; Назад</Link>
-          <h1 className="text-xl font-black text-gray-900">{client.name}</h1>
-          {client.address && <p className="text-sm text-gray-500">{client.address}</p>}
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-black text-gray-900">{client.name}</h1>
+            <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Просмотр</span>
+          </div>
+          {client.address && <p className="text-sm text-gray-500 mt-1">{client.address}</p>}
+          {client.phone && <p className="text-sm text-gray-500">{client.phone}</p>}
         </div>
 
-        {lastVisitStats && (
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 mb-4">
-            <p className="text-xs font-bold text-blue-500 uppercase mb-1">Последний визит</p>
-            <div className="flex gap-4">
-              <span className="text-lg font-black text-green-600">{lastVisitStats.sold} <span className="text-xs font-normal text-gray-500">прод.</span></span>
-              <span className="text-lg font-black text-red-500">{lastVisitStats.notSold} <span className="text-xs font-normal text-gray-500">отк.</span></span>
-            </div>
+        {/* Stats */}
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1 bg-indigo-50 rounded-xl p-2.5 text-center">
+            <p className="text-lg font-black text-indigo-700">{products.length}</p>
+            <p className="text-xs text-indigo-500">товаров</p>
           </div>
-        )}
+          {lastVisitStats && (
+            <>
+              <div className="flex-1 bg-green-50 rounded-xl p-2.5 text-center">
+                <p className="text-lg font-black text-green-700">{lastVisitStats.sold}</p>
+                <p className="text-xs text-green-500">продано</p>
+              </div>
+              <div className="flex-1 bg-red-50 rounded-xl p-2.5 text-center">
+                <p className="text-lg font-black text-red-600">{lastVisitStats.notSold}</p>
+                <p className="text-xs text-red-500">отказов</p>
+              </div>
+            </>
+          )}
+          {unsoldCount > 0 && (
+            <div className="flex-1 bg-orange-50 rounded-xl p-2.5 text-center">
+              <p className="text-lg font-black text-orange-700">{unsoldCount}</p>
+              <p className="text-xs text-orange-500">долг</p>
+            </div>
+          )}
+        </div>
 
-        <h2 className="text-sm font-bold text-gray-500 uppercase mb-2">Товары ({products.length})</h2>
+        {/* Products */}
+        <h2 className="text-xs font-bold text-gray-400 uppercase mb-2">Товары</h2>
         <div className="space-y-2">
           {products.map(p => (
             <div key={p.client_product_id} className={`rounded-2xl border-2 p-3 ${
               p.wasUnsold ? 'bg-orange-50 border-orange-300' : 'bg-white border-gray-200'
             }`}>
-              <p className="text-sm font-bold text-gray-900">{p.product.name}</p>
-              {p.wasUnsold && (
-                <p className="text-xs text-orange-700 mt-1">Не продано{p.refusalReason ? `: ${p.refusalReason}` : ''}</p>
+              <div className="flex items-start justify-between">
+                <p className="text-sm font-bold text-gray-900 flex-1">{p.product.name}</p>
+                {p.wasUnsold && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-500 text-white shrink-0 ml-2">долг</span>
+                )}
+              </div>
+              {p.wasUnsold && p.refusalReason && (
+                <p className="text-xs text-orange-700 mt-1">Причина: {p.refusalReason}</p>
               )}
             </div>
           ))}
