@@ -57,7 +57,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Prevent agents from accessing manager routes
-    const managerPaths = ['/dashboard', '/clients', '/products']
+    const managerPaths = ['/dashboard', '/clients', '/products', '/reports']
     if (role === 'agent' && managerPaths.some(p => pathname.startsWith(p))) {
       const url = request.nextUrl.clone()
       url.pathname = '/tasks'

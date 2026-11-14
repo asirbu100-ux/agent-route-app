@@ -32,6 +32,7 @@ export default async function ManagerLayout({ children }: { children: React.Reac
           <NavLink href="/dashboard">Обзор</NavLink>
           <NavLink href="/clients">Клиенты</NavLink>
           <NavLink href="/products">Товары</NavLink>
+          <NavLink href="/reports">Отчёты</NavLink>
         </nav>
 
         {/* Content */}

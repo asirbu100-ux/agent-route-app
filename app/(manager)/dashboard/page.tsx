@@ -50,15 +50,16 @@ export default async function DashboardPage({
     allVisits = (data ?? []) as unknown as typeof allVisits
   }
 
-  // Client counts per agent
-  const { data: clientCounts } = await supabase
+  // Today's planned clients per agent
+  const { data: todayClients } = await supabase
     .from('clients')
-    .select('agent_id')
+    .select('id, name, address, agent_id')
     .eq('visit_day', visitDay)
     .eq('is_active', true)
+    .order('name')
 
   const clientCountMap: Record<string, number> = {}
-  for (const c of clientCounts ?? []) {
+  for (const c of todayClients ?? []) {
     clientCountMap[c.agent_id] = (clientCountMap[c.agent_id] || 0) + 1
   }
 
@@ -74,8 +75,14 @@ export default async function DashboardPage({
         if (item.is_sold) sold++; else notSold++
       }
     }
-    return { ...agent, wd, total, completed, sold, notSold, visits: agentVisits }
+    // Planned for today but not completed yet
+    const visitByClient = new Map(agentVisits.map(v => [v.client_id, v]))
+    const missed = (todayClients ?? [])
+      .filter(c => c.agent_id === agent.id && !visitByClient.get(c.id)?.completed_at)
+      .map(c => ({ ...c, inProgress: visitByClient.has(c.id) }))
+    return { ...agent, wd, total, completed, sold, notSold, visits: agentVisits, missed }
   })
+  const missedTotal = agentSummary.reduce((s, a) => s + a.missed.length, 0)
 
   // Selected agent details
   const selectedAgent = selectedAgentId ? agentSummary.find(a => a.id === selectedAgentId) : null
@@ -123,6 +130,45 @@ export default async function DashboardPage({
           )
         })}
       </div>
+
+      {/* Not visited today */}
+      {missedTotal > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg font-bold text-gray-900 mb-1">Не посещены сегодня</h2>
+          <p className="text-sm text-gray-500 mb-3">{missedTotal} из {(todayClients ?? []).length} точек по плану на сегодня</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {agentSummary.filter(a => a.missed.length > 0).map(agent => (
+              <div key={agent.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-bold text-gray-900">{agent.full_name}</h3>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${agent.wd ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'}`}>
+                    {agent.wd ? `осталось ${agent.missed.length}` : 'день не начат'}
+                  </span>
+                </div>
+                <ul className="divide-y divide-gray-100">
+                  {agent.missed.map(c => (
+                    <li key={c.id} className="py-2 flex items-start justify-between gap-3 text-sm">
+                      <div className="min-w-0">
+                        <p className="text-gray-900 truncate">{c.name}</p>
+                        {c.address && <p className="text-xs text-gray-400 truncate">{c.address}</p>}
+                      </div>
+                      {c.inProgress && (
+                        <span className="shrink-0 text-xs font-bold text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded-full">в работе</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {missedTotal === 0 && (todayClients ?? []).length > 0 && (
+        <div className="mb-8 bg-green-50 text-green-700 rounded-xl p-4 text-sm font-medium">
+          Все точки на сегодня посещены ✓
+        </div>
+      )}
 
       {/* Selected agent details */}
       {selectedAgent && selectedAgent.visits.length > 0 && (
