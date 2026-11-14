@@ -5,6 +5,7 @@ import { getTodayDate, getTodayDayOfWeek } from '@/lib/utils/date'
 import StartDayButton from './StartDayButton'
 import FinishDayButton from './FinishDayButton'
 import Link from 'next/link'
+import { mapsRouteUrl, pluralRu } from '../ClientContacts'
 
 export default async function TasksPage({
   searchParams,
@@ -156,6 +157,11 @@ export default async function TasksPage({
   const completedCount = allClients.filter(c => visitMap.get(c.id)?.completed_at).length
   const allDone = completedCount === allClients.length && allClients.length > 0 && isToday
   const progressPct = allClients.length > 0 ? Math.round((completedCount / allClients.length) * 100) : 0
+  const remainingAddresses = allClients
+    .filter(c => !visitMap.get(c.id)?.completed_at && c.address)
+    .map(c => c.address as string)
+  const routeUrl = mapsRouteUrl(remainingAddresses)
+  const routeStops = Math.min(remainingAddresses.length, 10)
   const totalProducts = allClients.reduce((sum, c) => sum + (c.client_products?.length ?? 0), 0)
 
   return (
@@ -217,6 +223,14 @@ export default async function TasksPage({
           </div>
         )}
       </div>
+
+      {/* Navigate through remaining stops */}
+      {routeUrl && (
+        <a href={routeUrl} target="_blank" rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 mb-4 rounded-2xl bg-blue-600 text-white py-3 font-bold text-sm active:scale-[0.98] transition-transform">
+          🧭 Маршрут в Google Maps ({routeStops} {pluralRu(routeStops, 'точка', 'точки', 'точек')})
+        </a>
+      )}
 
       {/* Client list */}
       {allClients.length === 0 ? (

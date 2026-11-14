@@ -23,9 +23,7 @@ export async function startDay() {
     .from('work_days').insert({ agent_id: user.id, work_date: today }).select('id').single()
   if (error) throw new Error(error.message)
 
-  // Ensure agent_stats exists
-  await supabase.from('agent_stats').upsert({ agent_id: user.id }, { onConflict: 'agent_id' })
-
+  // agent_stats are maintained by DB triggers (migration 007)
   revalidatePath('/tasks')
   return data.id
 }
@@ -41,34 +39,7 @@ export async function finishDay() {
     .eq('agent_id', user.id).eq('work_date', today).is('finished_at', null)
   if (error) throw new Error(error.message)
 
-  // Update streak and points
-  const { data: stats } = await supabase
-    .from('agent_stats').select('*').eq('agent_id', user.id).single()
-
-  if (stats) {
-    const lastDate = stats.last_work_date
-    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1)
-    // Skip weekends
-    const yd = yesterday.getDay()
-    if (yd === 0) yesterday.setDate(yesterday.getDate() - 2)
-    if (yd === 6) yesterday.setDate(yesterday.getDate() - 1)
-    const yesterdayStr = yesterday.toISOString().split('T')[0]
-
-    const isConsecutive = lastDate === yesterdayStr
-    const newStreak = isConsecutive ? stats.streak_days + 1 : 1
-    const bestStreak = Math.max(stats.best_streak, newStreak)
-
-    // Points: 10 per completed day + 5 per streak day bonus
-    const dayPoints = 10 + (newStreak > 1 ? newStreak * 5 : 0)
-
-    await supabase.from('agent_stats').update({
-      streak_days: newStreak,
-      best_streak: bestStreak,
-      points: stats.points + dayPoints,
-      last_work_date: today,
-      updated_at: new Date().toISOString(),
-    }).eq('agent_id', user.id)
-  }
+  // Points and streaks are recalculated by DB triggers (migration 007)
 
   revalidatePath('/tasks')
 }
@@ -104,7 +75,7 @@ export async function markProduct(data: {
   is_sold: boolean
   refusal_reason?: string
 }) {
-  const { supabase, user } = await requireAgent()
+  const { supabase } = await requireAgent()
 
   const { error } = await supabase
     .from('visit_items')
@@ -115,12 +86,6 @@ export async function markProduct(data: {
       refusal_reason: data.is_sold ? null : (data.refusal_reason || null),
     }, { onConflict: 'client_visit_id,client_product_id' })
   if (error) throw new Error(error.message)
-
-  // Update agent stats
-  if (data.is_sold) {
-    const { data: st } = await supabase.from('agent_stats').select('total_sold').eq('agent_id', user.id).single()
-    if (st) await supabase.from('agent_stats').update({ total_sold: st.total_sold + 1 }).eq('agent_id', user.id)
-  }
 
   revalidatePath('/tasks')
 }
@@ -160,7 +125,7 @@ export async function uploadBeforePhoto(visitId: string, formData: FormData) {
 }
 
 export async function completeVisit(visitId: string) {
-  const { supabase, user } = await requireAgent()
+  const { supabase } = await requireAgent()
 
   const { data: visit } = await supabase
     .from('client_visits').select('photo_path, started_at').eq('id', visitId).single()
@@ -177,15 +142,6 @@ export async function completeVisit(visitId: string) {
     .update({ completed_at: new Date().toISOString(), duration_min: duration })
     .eq('id', visitId)
   if (error) throw new Error(error.message)
-
-  // Update agent stats
-  const { data: agentStats } = await supabase.from('agent_stats').select('total_visits').eq('agent_id', user.id).single()
-  if (agentStats) {
-    await supabase.from('agent_stats').update({
-      total_visits: agentStats.total_visits + 1,
-      updated_at: new Date().toISOString(),
-    }).eq('agent_id', user.id)
-  }
 
   revalidatePath('/tasks')
 }

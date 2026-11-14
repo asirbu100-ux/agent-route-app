@@ -12,10 +12,10 @@ DROP TABLE IF EXISTS point_products CASCADE;
 DROP TABLE IF EXISTS route_points CASCADE;
 DROP TABLE IF EXISTS routes CASCADE;
 
+DROP FUNCTION IF EXISTS submit_visit;
 DROP TYPE IF EXISTS route_status;
 DROP TYPE IF EXISTS visit_result;
 DROP TYPE IF EXISTS refusal_reason;
-DROP FUNCTION IF EXISTS submit_visit;
 
 -- ── CLIENTS ─────────────────────────────────────────────────
 CREATE TABLE clients (
