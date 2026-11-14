@@ -63,6 +63,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key>   # только для серве�
 | `004_simplified_schema.sql` | **удаляет старую схему маршрутов** и создаёт текущую: `clients`, `client_products`, `work_days`, `client_visits`, `visit_items`, бакет `visit-photos` |
 | `005_merchandising_and_targets.sql` | `merch_items`, фото «до», приоритеты и цели по товарам |
 | `006_gamification_and_tracking.sql` | GPS/таймер визита, `agent_stats` |
+| `007_secure_agent_stats.sql` | очки и статистика считаются триггерами в базе (агент не может их подделать), запрет открывать день задним числом и менять себе роль; пересчёт статистики всех агентов |
 
 Чтобы роль попадала в JWT, включите хук: Authentication → Hooks → *Custom Access Token* → `public.custom_access_token_hook`.
 Без него приложение тоже работает — роль читается из `profiles`.
@@ -130,7 +131,9 @@ agent_stats (очки, серии, счётчики визитов/продаж)
 ## Полезно знать
 
 - **Часовой пояс.** Все «сегодня» считаются в `Europe/Chisinau`; в выходные приложение показывает ближайший рабочий день.
-- **Очки.** 10 за завершённый день + бонус `5 × длина серии` при работе несколько дней подряд.
+- **Очки.** 10 за завершённый день + бонус `5 × длина серии` при работе несколько дней подряд (пятница → понедельник считается подряд).
+  Считаются **в базе** функцией `recalc_agent_stats` по триггерам на `work_days`, `client_visits`, `visit_items`; приложение `agent_stats` только читает.
+  Пересчитать вручную: `SELECT recalc_agent_stats(id) FROM profiles WHERE role = 'agent';`
 - **Фото** хранятся в приватном бакете `visit-photos`.
 - **PWA.** Иконки `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` лежат в `public/`; приложение ставится на главный экран телефона.
 - **Деплой.** Vercel: импортируйте репозиторий и задайте те же три переменные окружения.
