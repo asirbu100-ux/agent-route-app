@@ -16,6 +16,13 @@ export function mapsRouteUrl(addresses: string[]) {
   return `https://www.google.com/maps/dir/?${params.toString()}`
 }
 
+export function pluralRu(n: number, one: string, few: string, many: string) {
+  const m10 = n % 10, m100 = n % 100
+  if (m10 === 1 && m100 !== 11) return one
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few
+  return many
+}
+
 function normalizePhone(phone: string) {
   let digits = phone.replace(/[^\d+]/g, '')
   // Moldova local format: 0XXXXXXXX -> +373XXXXXXXX

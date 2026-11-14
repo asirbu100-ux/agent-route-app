@@ -186,6 +186,14 @@ export default async function ClientDetailPage({
     photoUrl = data?.signedUrl ?? null
   }
 
+  // "Before" photo is stored as a storage path too — it needs a signed URL
+  let photoBeforeUrl: string | null = null
+  const photoBeforePath = (visit as { photo_before?: string | null }).photo_before
+  if (photoBeforePath) {
+    const { data } = await supabase.storage.from('visit-photos').createSignedUrl(photoBeforePath, 3600)
+    photoBeforeUrl = data?.signedUrl ?? null
+  }
+
   return (
     <div className="p-4 pb-24">
       <div className="mb-4">
@@ -199,7 +207,7 @@ export default async function ClientDetailPage({
         visitId={visit.id}
         products={products}
         photoUrl={photoUrl}
-        photoBefore={(visit as { photo_before?: string }).photo_before ?? null}
+        photoBefore={photoBeforeUrl}
         isCompleted={!!visit.completed_at}
         lastVisitStats={lastVisitStats}
         visitStartedAt={(visit as { started_at?: string }).started_at ?? null}
