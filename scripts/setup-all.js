@@ -1,10 +1,21 @@
 // Complete setup: create users + import data from Excel
-// Usage: node scripts/setup-all.js
+// Usage: node scripts/setup-all.js [path/to/file.xlsx]
 
 const { createClient } = require('@supabase/supabase-js');
 const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path');
+
+// Excel file: pass a path as the first argument, otherwise the default is used.
+const DEFAULT_XLSX = path.join(__dirname, '../Мои файла/Задачи ТА ло скю.xlsx');
+function readWorkbook() {
+  const file = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_XLSX;
+  if (!fs.existsSync(file)) {
+    console.error(`Excel file not found: ${file}\nUsage: node ${path.basename(process.argv[1])} [path/to/file.xlsx]`);
+    process.exit(1);
+  }
+  return XLSX.readFile(file);
+}
 
 // Load env
 const envContent = fs.readFileSync(path.join(__dirname, '../.env.local'), 'utf8');
@@ -48,7 +59,7 @@ async function main() {
 
   // Step 3: Import products from Excel
   console.log('3. Importing products...');
-  const wb = XLSX.readFile(path.join(__dirname, '../Мои файла/Задачи ТА ло скю.xlsx'));
+  const wb = readWorkbook();
   const productIds = await importProducts(wb);
   console.log(`   ${Object.keys(productIds).length} products imported\n`);
 

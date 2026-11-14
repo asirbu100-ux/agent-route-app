@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import ClientContacts from '../../ClientContacts'
 import ClientVisitForm from './ClientVisitForm'
 
 export default async function ClientDetailPage({
@@ -90,6 +91,7 @@ export default async function ClientDetailPage({
           </div>
           {client.address && <p className="text-sm text-gray-500 mt-1">{client.address}</p>}
           {client.phone && <p className="text-sm text-gray-500">{client.phone}</p>}
+          <ClientContacts address={client.address} phone={client.phone} />
         </div>
 
         {/* Stats */}
@@ -190,6 +192,7 @@ export default async function ClientDetailPage({
         <Link href={backUrl} className="text-sm font-bold text-blue-600 mb-2 inline-block">&larr; Назад</Link>
         <h1 className="text-xl font-black text-gray-900">{client.name}</h1>
         {client.address && <p className="text-sm text-gray-500">{client.address}</p>}
+        <ClientContacts address={client.address} phone={client.phone} />
       </div>
 
       <ClientVisitForm
